@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -6,18 +7,26 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float moveSpeed = 6f;
     [SerializeField] private float jumpForce = 12f;
 
-    [Header("Attack")]
-    [SerializeField] private Transform attackPoint;
-    [SerializeField] private float attackRadius = 0.6f;
-    [SerializeField] private LayerMask enemyLayer;
-    [SerializeField] private int attackDamage = 1;
-
     [Header("Ground Check (BoxCast)")]
     [SerializeField] private LayerMask groundLayer;
 
     [SerializeField] private float groundDistance = 0.1f;
     [SerializeField] private Vector2 groundBoxSizeOffset = new Vector2(0.1f, 0.0f);
     [SerializeField] private Vector2 groundBoxCenterOffset = new Vector2(0f, 0f);
+
+    [Header("Attack")]
+    [SerializeField] private Transform attackPoint;
+    [SerializeField] private float attackRadius = 0.6f;
+    [SerializeField] private LayerMask enemyLayer;
+    [SerializeField] private int attackDamage = 1;
+
+
+    public int FacingDirection { get; private set; } = 1;
+
+    private bool jumpLocked;
+    private float jumpDirection;
+    private bool wasGrounded;
+    public float VelocityY => rb.velocity.y;
 
     private BoxCollider2D coll;
 
@@ -27,7 +36,20 @@ public class PlayerController : MonoBehaviour
 
     private float moveInput;
     private bool isGrounded;
+    public bool IsGrounded => isGrounded;
     private bool isAttacking;
+
+    public enum PlayerState
+    {
+        Idle,
+        Running,
+        Jumping,
+        Falling,
+        Attacking
+    }
+
+    public PlayerState currentState = PlayerState.Idle;
+    private PlayerState airStateLock;
 
     private void Awake()
     {
@@ -42,9 +64,18 @@ public class PlayerController : MonoBehaviour
         HandleInput();
         HandleJump();
         HandleAttack();
-        UpdateAnimations();
+        //UpdateAnimations();
         FlipCharacter();
-        print(isGrounded);
+        isGrounded = CheckGrounded();
+
+        if (!wasGrounded && isGrounded)
+        {
+            jumpLocked = false;
+        }
+
+        wasGrounded = isGrounded;
+
+        ChangePlayerState();
     }
 
     private void FixedUpdate()
@@ -59,16 +90,30 @@ public class PlayerController : MonoBehaviour
 
     private void Move()
     {
-        rb.velocity = new Vector2(moveInput * moveSpeed, rb.velocity.y);
+        if (isGrounded)
+        {
+            rb.velocity = new Vector2(
+                moveInput * moveSpeed,
+                rb.velocity.y
+            );
+        }
+        else if (jumpLocked)
+        {
+            rb.velocity = new Vector2(
+                jumpDirection * moveSpeed,
+                rb.velocity.y
+            );
+        }
     }
 
     private void HandleJump()
     {
-        isGrounded = IsGrounded();
-
-        if ((Input.GetKeyDown(KeyCode.Space)) && isGrounded)
+        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+
+            jumpLocked = true;
+            jumpDirection = moveInput;
         }
     }
 
@@ -102,6 +147,7 @@ public class PlayerController : MonoBehaviour
     {
         if (moveInput > 0)
         {
+            FacingDirection = 1;
             transform.localScale = new Vector3(
                 Mathf.Abs(originalScale.x),
                 originalScale.y,
@@ -110,6 +156,7 @@ public class PlayerController : MonoBehaviour
         }
         else if (moveInput < 0)
         {
+            FacingDirection = -1;
             transform.localScale = new Vector3(
                 -Mathf.Abs(originalScale.x),
                 originalScale.y,
@@ -118,13 +165,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void UpdateAnimations()
-    {
-        animator.SetFloat("Speed", Mathf.Abs(moveInput));
-        animator.SetBool("Grounded", isGrounded);
-        animator.SetFloat("VerticalVelocity", rb.velocity.y);
-    }
-    private bool IsGrounded()
+    private bool CheckGrounded()
     {
         Bounds bounds = coll.bounds;
 
@@ -149,6 +190,52 @@ public class PlayerController : MonoBehaviour
 
         return hit.collider != null;
     }
+
+    private void ChangePlayerState()
+    {
+        if (isGrounded)
+        {
+            airStateLock = PlayerState.Idle;
+
+            if (rb.velocity.x != 0)
+                currentState = PlayerState.Running;
+            else
+                currentState = PlayerState.Idle;
+        }
+        else
+        {
+            if (rb.velocity.y > 0)
+                airStateLock = PlayerState.Jumping;
+            else if (rb.velocity.y < 0)
+                airStateLock = PlayerState.Falling;
+
+            currentState = airStateLock;
+        }
+
+        ChangePlayerAnimation();
+    }
+
+    private void ChangePlayerAnimation()
+    {
+        switch (currentState)
+        {
+            case PlayerState.Idle:
+                animator.SetInteger("State", (int)PlayerState.Idle);
+                break;
+            case PlayerState.Running:
+                animator.SetInteger("State", (int)PlayerState.Running);
+                break;
+            case PlayerState.Jumping:
+                animator.SetInteger("State", (int)PlayerState.Jumping);
+                break;
+            case PlayerState.Falling:
+                animator.SetInteger("State", (int)PlayerState.Falling);
+                break;
+            case PlayerState.Attacking:
+                animator.SetTrigger("Attack");
+                break;
+            }
+        }
 
     private void OnDrawGizmos()
     {
