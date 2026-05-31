@@ -19,8 +19,10 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float attackRadius = 0.6f;
     [SerializeField] private LayerMask enemyLayer;
     [SerializeField] private int attackDamage = 1;
+    private bool useAttack1 = true;
+    private bool isAttacking;
 
-
+    private bool isHit;
     public int FacingDirection { get; private set; } = 1;
 
     private bool jumpLocked;
@@ -37,15 +39,13 @@ public class PlayerController : MonoBehaviour
     private float moveInput;
     private bool isGrounded;
     public bool IsGrounded => isGrounded;
-    private bool isAttacking;
 
     public enum PlayerState
     {
         Idle,
         Running,
         Jumping,
-        Falling,
-        Attacking
+        Falling
     }
 
     public PlayerState currentState = PlayerState.Idle;
@@ -74,8 +74,8 @@ public class PlayerController : MonoBehaviour
         }
 
         wasGrounded = isGrounded;
-
-        ChangePlayerState();
+        if (!isHit)
+            ChangePlayerState();
     }
 
     private void FixedUpdate()
@@ -85,11 +85,24 @@ public class PlayerController : MonoBehaviour
 
     private void HandleInput()
     {
+        if (isHit) return;
         moveInput = Input.GetAxisRaw("Horizontal");
     }
 
     private void Move()
     {
+        if (isHit)
+            return;
+        if (isAttacking && isGrounded)
+        {
+            rb.velocity = new Vector2(
+                0f,
+                rb.velocity.y
+            );
+
+            return;
+        }
+
         if (isGrounded)
         {
             rb.velocity = new Vector2(
@@ -108,6 +121,7 @@ public class PlayerController : MonoBehaviour
 
     private void HandleJump()
     {
+        if (isHit) return;
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
@@ -119,32 +133,73 @@ public class PlayerController : MonoBehaviour
 
     private void HandleAttack()
     {
+        if (isAttacking || isHit)
+            return;
+
         if (Input.GetKeyDown(KeyCode.P) || Input.GetMouseButtonDown(0))
         {
+            StartAttack();
+        }
+    }
+    private void StartAttack()
+    {
+        isAttacking = true;
+        moveInput = 0;
+        if (useAttack1)
             animator.SetTrigger("Attack");
+        else
+            animator.SetTrigger("Attack2");
 
-            Collider2D[] enemiesHit = Physics2D.OverlapCircleAll(
-                attackPoint.position,
-                attackRadius,
-                enemyLayer
-            );
+        useAttack1 = !useAttack1;
+    }
+    public void DealDamage()
+    {
+        Collider2D[] enemiesHit = Physics2D.OverlapCircleAll(
+            attackPoint.position,
+            attackRadius,
+            enemyLayer
+        );
 
-            foreach (Collider2D enemy in enemiesHit)
+        foreach (Collider2D enemy in enemiesHit)
+        {
+            SkeletonEnemy skeleton = enemy.GetComponent<SkeletonEnemy>();
+
+            if (skeleton != null)
             {
-                Debug.Log("Enemy hit: " + enemy.name);
-
-                EnemyHealth enemyHealth = enemy.GetComponent<EnemyHealth>();
-
-                if (enemyHealth != null)
-                {
-                    enemyHealth.TakeDamage(attackDamage);
-                }
+                skeleton.TakeDamage();
             }
         }
+    }
+    public void EndAttack()
+    {
+        isAttacking = false;
+    }
+
+    public void TakeHit(Vector2 knockback)
+    {
+        if (isHit) return;
+        isHit = true;
+        isAttacking = false;
+        animator.SetBool("Hit",true);
+        StartCoroutine(HitRoutine(knockback));
+    }
+    private IEnumerator HitRoutine(Vector2 knockback)
+    {
+        
+        rb.velocity = Vector2.zero;
+
+        rb.AddForce(knockback, ForceMode2D.Impulse);
+
+        // espera a que acabe animación (o tiempo fijo simple)
+        yield return new WaitForSeconds(0.6f);
+        animator.SetBool("Hit", false);
+        isHit = false;
     }
 
     private void FlipCharacter()
     {
+        if (isAttacking || isHit)
+            return;
         if (moveInput > 0)
         {
             FacingDirection = 1;
@@ -193,6 +248,7 @@ public class PlayerController : MonoBehaviour
 
     private void ChangePlayerState()
     {
+        if (isHit) return;
         if (isGrounded)
         {
             airStateLock = PlayerState.Idle;
@@ -211,12 +267,15 @@ public class PlayerController : MonoBehaviour
 
             currentState = airStateLock;
         }
-
         ChangePlayerAnimation();
     }
 
     private void ChangePlayerAnimation()
     {
+        if (isHit)
+        {
+            return;
+        }
         switch (currentState)
         {
             case PlayerState.Idle:
@@ -231,11 +290,8 @@ public class PlayerController : MonoBehaviour
             case PlayerState.Falling:
                 animator.SetInteger("State", (int)PlayerState.Falling);
                 break;
-            case PlayerState.Attacking:
-                animator.SetTrigger("Attack");
-                break;
-            }
         }
+    }
 
     private void OnDrawGizmos()
     {

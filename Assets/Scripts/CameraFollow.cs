@@ -76,6 +76,9 @@ public class CameraFollow : MonoBehaviour
         // MOVE CAMERA
         //----------------------------------
 
+        // límite izquierdo del mapa
+        desiredPosition.x = Mathf.Max(0f, desiredPosition.x);
+
         transform.position = Vector3.Lerp(
             transform.position,
             new Vector3(
