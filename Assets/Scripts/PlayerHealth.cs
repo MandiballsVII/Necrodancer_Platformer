@@ -3,6 +3,12 @@ using UnityEngine;
 public class PlayerHealth : MonoBehaviour
 {
     public int health = 2;
+    PlayerController playerController;
+
+    private void Awake()
+    {
+        playerController = GetComponent<PlayerController>();
+    }
 
     public void TakeDamage(int damage)
     {
@@ -10,7 +16,7 @@ public class PlayerHealth : MonoBehaviour
 
         if (health <= 0)
         {
-            Debug.Log("Player dead");
+            playerController.Die();
         }
     }
 }

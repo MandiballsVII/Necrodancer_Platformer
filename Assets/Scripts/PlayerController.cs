@@ -6,6 +6,7 @@ public class PlayerController : MonoBehaviour
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 6f;
     [SerializeField] private float jumpForce = 12f;
+    [SerializeField] private float maxFallSpeed = 25f;
 
     [Header("Ground Check (BoxCast)")]
     [SerializeField] private LayerMask groundLayer;
@@ -22,7 +23,13 @@ public class PlayerController : MonoBehaviour
     private bool useAttack1 = true;
     private bool isAttacking;
 
+    [Header("Hit & Death")]
+    [SerializeField] private BoxCollider2D hitbox;
+    [SerializeField] private BoxCollider2D deathCollider;
+    PlayerHealth playerHealth;
+
     private bool isHit;
+    private bool isDead;
     public int FacingDirection { get; private set; } = 1;
 
     private bool jumpLocked;
@@ -57,6 +64,7 @@ public class PlayerController : MonoBehaviour
         animator = GetComponent<Animator>();
         originalScale = transform.localScale;
         coll = GetComponent<BoxCollider2D>();
+        playerHealth = GetComponent<PlayerHealth>();
     }
 
     private void Update()
@@ -81,17 +89,18 @@ public class PlayerController : MonoBehaviour
     private void FixedUpdate()
     {
         Move();
+        ClampFallSpeed();
     }
 
     private void HandleInput()
     {
-        if (isHit) return;
+        if (isHit || isDead) return;
         moveInput = Input.GetAxisRaw("Horizontal");
     }
 
     private void Move()
     {
-        if (isHit)
+        if (isHit || isDead)
             return;
         if (isAttacking && isGrounded)
         {
@@ -118,10 +127,17 @@ public class PlayerController : MonoBehaviour
             );
         }
     }
+    private void ClampFallSpeed()
+    {
+        if (rb.velocity.y < -maxFallSpeed)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, -maxFallSpeed);
+        }
+    }
 
     private void HandleJump()
     {
-        if (isHit) return;
+        if (isHit || isDead) return;
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
@@ -133,7 +149,7 @@ public class PlayerController : MonoBehaviour
 
     private void HandleAttack()
     {
-        if (isAttacking || isHit)
+        if (isAttacking || isHit || isDead)
             return;
 
         if (Input.GetKeyDown(KeyCode.P) || Input.GetMouseButtonDown(0))
@@ -177,10 +193,13 @@ public class PlayerController : MonoBehaviour
 
     public void TakeHit(Vector2 knockback)
     {
-        if (isHit) return;
+        if (isHit || isDead) return;
         isHit = true;
         isAttacking = false;
-        animator.SetBool("Hit",true);
+        if(playerHealth.health > 0)
+            animator.SetBool("Hit",true);
+        else            
+            animator.SetTrigger("Die");
         StartCoroutine(HitRoutine(knockback));
     }
     private IEnumerator HitRoutine(Vector2 knockback)
@@ -195,10 +214,36 @@ public class PlayerController : MonoBehaviour
         animator.SetBool("Hit", false);
         isHit = false;
     }
+    public void Die()
+    {
+        if (isDead) return;
+
+        isDead = true;
+        isHit = true;
+        isAttacking = false;
+
+        rb.velocity = Vector2.zero;
+
+        animator.SetTrigger("Die");
+    }
+    public void ChangeColliders()
+    {
+        hitbox.enabled = false;
+        deathCollider.enabled = true;
+    }
+    public void OnDeathAnimationEnd()
+    {
+        StartCoroutine(LevelRestartWaiter());
+    }
+    private IEnumerator LevelRestartWaiter()
+    {
+        yield return new WaitForSeconds(2f);
+        GameManager.Instance.RestartLevel();
+    }
 
     private void FlipCharacter()
     {
-        if (isAttacking || isHit)
+        if (isAttacking || isHit || isDead)
             return;
         if (moveInput > 0)
         {
@@ -248,7 +293,7 @@ public class PlayerController : MonoBehaviour
 
     private void ChangePlayerState()
     {
-        if (isHit) return;
+        if (isHit || isDead) return;
         if (isGrounded)
         {
             airStateLock = PlayerState.Idle;
@@ -272,7 +317,7 @@ public class PlayerController : MonoBehaviour
 
     private void ChangePlayerAnimation()
     {
-        if (isHit)
+        if (isHit || isDead)
         {
             return;
         }

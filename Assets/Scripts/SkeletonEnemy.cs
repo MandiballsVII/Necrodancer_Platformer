@@ -195,6 +195,13 @@ public class SkeletonEnemy : MonoBehaviour
         if (player == null)
             return;
 
+        var playerHealth = player.GetComponent<PlayerHealth>();
+
+        if (playerHealth != null)
+        {
+            playerHealth.TakeDamage(damage);
+        }
+
         float horizontalDirection =
         player.position.x > transform.position.x ? 1f : -1f;
 
@@ -202,12 +209,6 @@ public class SkeletonEnemy : MonoBehaviour
 
         player.GetComponent<PlayerController>().TakeHit(knockback);
 
-        var playerHealth = player.GetComponent<PlayerHealth>();
-
-        if (playerHealth != null)
-        {
-            playerHealth.TakeDamage(damage);
-        }
     }
     private void ChangeState(SkeletonState newState)
     {
