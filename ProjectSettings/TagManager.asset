@@ -53,3 +53,6 @@ TagManager:
   - name: Foreground
     uniqueID: 2777824449
     locked: 0
+  - name: OverForeground
+    uniqueID: 2750219997
+    locked: 0

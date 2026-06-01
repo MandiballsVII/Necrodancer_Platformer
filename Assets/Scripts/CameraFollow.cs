@@ -15,6 +15,8 @@ public class CameraFollow : MonoBehaviour
 
     private float targetY;
 
+    private bool followEnabled = true;
+
     private void Start()
     {
         targetY = target.position.y;
@@ -22,7 +24,7 @@ public class CameraFollow : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (target == null)
+        if (target == null || !followEnabled)
             return;
 
         Vector3 desiredPosition = transform.position;
@@ -88,7 +90,20 @@ public class CameraFollow : MonoBehaviour
             ),
             smoothSpeed * Time.deltaTime
         );
-    } 
+    }
+    public void StopFollowing(float duration)
+    {
+        StartCoroutine(StopFollowingRoutine(duration));
+    }
+
+    private System.Collections.IEnumerator StopFollowingRoutine(float duration)
+    {
+        followEnabled = false;
+
+        yield return new WaitForSeconds(duration);
+
+        followEnabled = true;
+    }
 
     private void OnDrawGizmos()
     {

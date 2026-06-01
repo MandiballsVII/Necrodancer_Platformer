@@ -2,12 +2,17 @@ using UnityEngine;
 
 public class PlayerHealth : MonoBehaviour
 {
-    public int health = 2;
+    [SerializeField] private int maxHealth = 2;
+    public int health;
     PlayerController playerController;
 
     private void Awake()
     {
         playerController = GetComponent<PlayerController>();
+    }
+    private void Start()
+    {
+        health = maxHealth;
     }
 
     public void TakeDamage(int damage)
@@ -18,5 +23,19 @@ public class PlayerHealth : MonoBehaviour
         {
             playerController.Die();
         }
+    }
+    public bool Heal(int amount)
+    {
+        if (health >= maxHealth)
+            return false;
+
+        health = Mathf.Min(health + amount, maxHealth);
+
+        return true;
+    }
+
+    public bool IsFullHealth()
+    {
+        return health >= maxHealth;
     }
 }

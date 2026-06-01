@@ -1,0 +1,27 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class FallKill : MonoBehaviour
+{
+    private GameObject player;
+    void Awake()
+    {
+        player = GameObject.FindGameObjectWithTag("Player");
+    }
+
+    IEnumerator PlayerKillerWaiter()
+    {
+        yield return new WaitForSeconds(2f);
+        player.GetComponent<PlayerHealth>().TakeDamage(2);
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (!collision.gameObject.CompareTag("Player"))
+            return;
+        Camera.main.GetComponent<CameraFollow>().enabled = false;
+        StartCoroutine(PlayerKillerWaiter());
+    }
+
+}

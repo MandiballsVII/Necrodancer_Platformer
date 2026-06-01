@@ -4,9 +4,9 @@ using UnityEngine;
 public class SkeletonEnemy : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] private Transform player;
     [SerializeField] private Transform wallDetector;
     [SerializeField] private Transform groundDetector;
+    private Transform player;
 
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 2f;
@@ -48,6 +48,7 @@ public class SkeletonEnemy : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
+        player = GameObject.FindGameObjectWithTag("Player").transform;
     }
 
     private void Start()
@@ -228,7 +229,7 @@ public class SkeletonEnemy : MonoBehaviour
 
     public void TakeDamage()
     {
-        if (currentState == SkeletonState.Dying)
+        if (currentState == SkeletonState.Dying || currentState == SkeletonState.Spawning)
             return;
 
         Die();
