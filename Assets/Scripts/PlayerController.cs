@@ -28,6 +28,11 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private BoxCollider2D deathCollider;
     PlayerHealth playerHealth;
 
+    [Header("Jump Assist")]
+    [SerializeField] private float coyoteTime = 0.15f;
+
+    private float coyoteTimer;
+
     private bool isHit;
     private bool isDead;
     public int FacingDirection { get; private set; } = 1;
@@ -75,6 +80,15 @@ public class PlayerController : MonoBehaviour
         //UpdateAnimations();
         FlipCharacter();
         isGrounded = CheckGrounded();
+
+        if (isGrounded)
+        {
+            coyoteTimer = coyoteTime;
+        }
+        else
+        {
+            coyoteTimer -= Time.deltaTime;
+        }
 
         if (!wasGrounded && isGrounded)
         {
@@ -142,10 +156,11 @@ public class PlayerController : MonoBehaviour
     private void HandleJump()
     {
         if (isHit || isDead) return;
-        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+        if (Input.GetKeyDown(KeyCode.Space) && coyoteTimer > 0f)
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
 
+            coyoteTimer = 0f;
             jumpLocked = true;
             jumpDirection = moveInput;
         }
