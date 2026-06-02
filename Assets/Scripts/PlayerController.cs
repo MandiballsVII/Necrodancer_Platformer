@@ -84,6 +84,10 @@ public class PlayerController : MonoBehaviour
         wasGrounded = isGrounded;
         if (!isHit)
             ChangePlayerState();
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            GameManager.Instance.TogglePause();
+        }
     }
 
     private void FixedUpdate()
@@ -336,6 +340,19 @@ public class PlayerController : MonoBehaviour
                 animator.SetInteger("State", (int)PlayerState.Falling);
                 break;
         }
+    }
+    public void EnterEndGameState()
+    {
+        rb.velocity = Vector2.zero;
+
+        moveInput = 0;
+        isAttacking = false;
+        isHit = false;
+
+        currentState = PlayerState.Idle;
+
+        animator.SetInteger("State", (int)PlayerState.Idle);
+        gameObject.GetComponent<PlayerHealth>().isInvulnerable = true;
     }
 
     private void OnDrawGizmos()

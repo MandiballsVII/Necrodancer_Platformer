@@ -243,8 +243,10 @@ public class SkeletonEnemy : MonoBehaviour
         Die();
     }
 
-    private void Die()
+    public void Die()
     {
+        if (currentState == SkeletonState.Dying)
+            return;
         ChangeState(SkeletonState.Dying);
 
         rb.velocity = Vector2.zero;
@@ -255,7 +257,7 @@ public class SkeletonEnemy : MonoBehaviour
     {
         if (killedByPlayer)
         {
-            int roll = Random.Range(0, 10);
+            int roll = Random.Range(0, 3);
 
             if (roll == 0)
             {

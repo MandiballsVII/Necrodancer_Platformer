@@ -33,6 +33,8 @@ public class EnemySpawner : MonoBehaviour
 
     private readonly List<GameObject> aliveEnemies = new();
 
+    private bool canSpawn = true;
+
     private void Start()
     {
         StartCoroutine(SpawnLoop());
@@ -40,7 +42,7 @@ public class EnemySpawner : MonoBehaviour
 
     private IEnumerator SpawnLoop()
     {
-        while (true)
+        while (canSpawn)
         {
             // FASE ACTIVA
             float activeTime = Random.Range(activeMinTime, activeMaxTime);
@@ -59,6 +61,12 @@ public class EnemySpawner : MonoBehaviour
             float restTime = Random.Range(restMinTime, restMaxTime);
             yield return new WaitForSeconds(restTime);
         }
+    }
+
+    public void StopSpawning()
+    {
+        StopAllCoroutines();
+        canSpawn = false;
     }
 
     private void TrySpawnOneEnemy()
