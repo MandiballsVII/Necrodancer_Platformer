@@ -163,6 +163,10 @@ public class SkeletonEnemy : MonoBehaviour
 
         if (hit != null && hit.CompareTag("Player"))
         {
+            if(player.gameObject.GetComponent<PlayerHealth>().isInvulnerable)
+            {
+                return;
+            }
             StartAttack();
         }
     }

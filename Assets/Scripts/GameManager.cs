@@ -23,6 +23,23 @@ public class GameManager : MonoBehaviour
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
+    public void LoadLevel(int levelIndex)
+    {
+        coins = 0;
+        SceneManager.LoadScene(levelIndex);
+    }
+
+    public void QuitGame()
+    {
+        Debug.Log("Quit Game");
+
+        #if UNITY_EDITOR
+                UnityEditor.EditorApplication.isPlaying = false;
+        #else
+            Application.Quit();
+        #endif
+    }
+
     public void AddCoin()
     {
         coins++;

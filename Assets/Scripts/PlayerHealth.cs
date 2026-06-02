@@ -10,7 +10,7 @@ public class PlayerHealth : MonoBehaviour
     [SerializeField] private float invulnerabilityTime = 2.5f;
     [SerializeField] private float blinkInterval = 0.1f;
 
-    private bool isInvulnerable;
+    public bool isInvulnerable;
 
     private SpriteRenderer spriteRenderer;
     private Collider2D playerCollider;
