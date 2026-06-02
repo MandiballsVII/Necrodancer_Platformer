@@ -120,7 +120,7 @@ MonoBehaviour:
   attackDamage: 1
   hitbox: {fileID: 1929528522283079234}
   deathCollider: {fileID: 1255780247525320427}
-  coyoteTime: 0.15
+  coyoteTime: 0.12
   currentState: 0
 --- !u!50 &9799195911989868
 Rigidbody2D:
