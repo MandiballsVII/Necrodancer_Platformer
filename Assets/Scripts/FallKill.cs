@@ -12,8 +12,8 @@ public class FallKill : MonoBehaviour
 
     IEnumerator PlayerKillerWaiter()
     {
-        yield return new WaitForSeconds(2f);
-        player.GetComponent<PlayerHealth>().TakeDamage(2);
+        yield return new WaitForSeconds(0.2f);
+        player.GetComponent<PlayerController>().Die();
     }
 
     private void OnTriggerEnter2D(Collider2D collision)

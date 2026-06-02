@@ -18,6 +18,7 @@ public class SkeletonEnemy : MonoBehaviour
 
     [Header("Lifetime")]
     [SerializeField] private float lifeTime = 10f;
+    [SerializeField] private GameObject skullCoin;
 
     [Header("Attack")]
     [SerializeField] private Transform playerDetector;
@@ -25,6 +26,7 @@ public class SkeletonEnemy : MonoBehaviour
     [SerializeField] private int damage = 1;
     [SerializeField] private float attackCooldown = 1.5f;
     private bool isAttacking;
+    private bool killedByPlayer;
 
     private bool canAttack = true;
 
@@ -179,7 +181,7 @@ public class SkeletonEnemy : MonoBehaviour
 
         animator.SetInteger("State", (int)SkeletonState.Attacking);
 
-        yield return null; // deja arrancar animación
+        yield return null; // deja arrancar animacion
 
         yield return new WaitForSeconds(attackCooldown);
 
@@ -232,6 +234,8 @@ public class SkeletonEnemy : MonoBehaviour
         if (currentState == SkeletonState.Dying || currentState == SkeletonState.Spawning)
             return;
 
+        killedByPlayer = true;
+
         Die();
     }
 
@@ -245,6 +249,19 @@ public class SkeletonEnemy : MonoBehaviour
 
     public void DestroyEnemy()
     {
+        if (killedByPlayer)
+        {
+            int roll = Random.Range(0, 10);
+
+            if (roll == 0)
+            {
+                Instantiate(
+                    skullCoin,
+                    transform.position,
+                    Quaternion.identity
+                );
+            }
+        }
         Destroy(gameObject);
     }
 

@@ -26,8 +26,10 @@ public class EnemySpawner : MonoBehaviour
 
     [Header("Ground Detection")]
     [SerializeField] private LayerMask terrainLayer;
-    [SerializeField] private float raycastHeight = 20f;
+    //[SerializeField] private float raycastHeight = 20f;
     [SerializeField] private float raycastDepth = 60f;
+    [SerializeField] private bool debugDraw = true;
+    [SerializeField] private Vector2 spawnCheckSize = new Vector2(0.5f, 0.5f);
 
     private readonly List<GameObject> aliveEnemies = new();
 
@@ -83,16 +85,19 @@ public class EnemySpawner : MonoBehaviour
 
         Vector2 randomPoint = center + Random.insideUnitCircle * spawnRadius;
 
+        if (debugDraw)
+        {
+            Debug.DrawLine(player.position, randomPoint, Color.yellow, 0.1f);
+            Debug.DrawRay(randomPoint, Vector2.down * raycastDepth, Color.cyan, 0.5f);
+        }
+
         if (Vector2.Distance(randomPoint, player.position) < minPlayerDistance)
         {
             spawnPos = default;
             return false;
         }
 
-        Vector2 rayOrigin = new Vector2(
-            randomPoint.x,
-            randomPoint.y + raycastHeight
-        );
+        Vector2 rayOrigin = randomPoint;
 
         RaycastHit2D hit = Physics2D.Raycast(
             rayOrigin,
@@ -100,6 +105,11 @@ public class EnemySpawner : MonoBehaviour
             raycastDepth,
             terrainLayer
         );
+
+        if (debugDraw && hit.collider != null)
+        {
+            Debug.DrawLine(rayOrigin, hit.point, Color.green, 0.2f);
+        }
 
         if (hit.collider == null)
         {
@@ -113,6 +123,16 @@ public class EnemySpawner : MonoBehaviour
             0f
         );
 
+        bool blocked = Physics2D.OverlapBox(candidatePos + Vector3.up * 1.2f, spawnCheckSize, 0f, terrainLayer);
+
+        Debug.DrawLine(candidatePos, candidatePos + Vector3.up * 2f, Color.magenta, 1f);
+
+        if (blocked)
+        {
+            spawnPos = default;
+            return false;
+        }
+
         if (Vector2.Distance(candidatePos, player.position) < minPlayerDistance)
         {
             spawnPos = default;
@@ -120,7 +140,12 @@ public class EnemySpawner : MonoBehaviour
         }
 
         // IMPORTANTE: spawn EXACTO sobre el suelo
-        spawnPos = candidatePos;
+        spawnPos = candidatePos + Vector3.up * 0.1f;
+
+        if (debugDraw)
+        {
+            Debug.DrawLine(candidatePos, player.position, Color.red, 0.2f);
+        }
 
         return true;
     }

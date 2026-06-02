@@ -15,6 +15,6 @@ public class PoisonousWater : MonoBehaviour
     {
         if (!collision.gameObject.CompareTag("Player"))
             return;
-        player.GetComponent<PlayerHealth>().TakeDamage(2);
+        player.GetComponent<PlayerController>().Die();
     }
 }

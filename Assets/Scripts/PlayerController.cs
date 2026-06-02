@@ -196,20 +196,20 @@ public class PlayerController : MonoBehaviour
         if (isHit || isDead) return;
         isHit = true;
         isAttacking = false;
-        if(playerHealth.health > 0)
-            animator.SetBool("Hit",true);
-        else            
+        if (playerHealth.health > 0)
+            animator.SetBool("Hit", true);
+        else
             animator.SetTrigger("Die");
         StartCoroutine(HitRoutine(knockback));
     }
     private IEnumerator HitRoutine(Vector2 knockback)
     {
-        
+
         rb.velocity = Vector2.zero;
 
         rb.AddForce(knockback, ForceMode2D.Impulse);
 
-        // espera a que acabe animación (o tiempo fijo simple)
+        // espera a que acabe animacion (o tiempo fijo simple)
         yield return new WaitForSeconds(0.6f);
         animator.SetBool("Hit", false);
         isHit = false;

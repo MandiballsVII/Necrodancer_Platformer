@@ -10,17 +10,22 @@ public class CoinPickup : MonoBehaviour
 
     private Vector3 startPosition;
 
-    private void Start()
-    {
-        startPosition = transform.position;
-    }
-
     private void Update()
     {
         float offset = Mathf.Sin(Time.time * floatSpeed) * floatAmplitude;
 
-        transform.position = startPosition +
-            Vector3.up * offset;
+        if (startPosition != null)
+        {
+            transform.position = startPosition +
+                Vector3.up * offset;
+        }
+        else
+            return;
+    }
+
+    public void Init(Vector2 initialPosition)
+    {
+        startPosition = initialPosition;
     }
 
     private void OnTriggerEnter2D(Collider2D other)
