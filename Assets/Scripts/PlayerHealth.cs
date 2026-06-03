@@ -47,6 +47,7 @@ public class PlayerHealth : MonoBehaviour
         else
         {
             StartCoroutine(InvulnerabilityRoutine());
+            AudioManager.Instance.PlayEnemyHit();
         }
     }
 

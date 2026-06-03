@@ -34,7 +34,7 @@ public class HealthPickup : MonoBehaviour
 
         if (playerHealth == null)
             return;
-
+        AudioManager.Instance.PlayHeal();
         bool healed = playerHealth.Heal(healAmount);
 
         Destroy(gameObject);

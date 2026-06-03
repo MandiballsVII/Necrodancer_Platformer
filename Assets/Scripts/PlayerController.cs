@@ -160,6 +160,7 @@ public class PlayerController : MonoBehaviour
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
 
+            AudioManager.Instance.PlayJump();
             coyoteTimer = 0f;
             jumpLocked = true;
             jumpDirection = moveInput;
@@ -174,6 +175,7 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.P) || Input.GetMouseButtonDown(0))
         {
             StartAttack();
+            AudioManager.Instance.PlayAttack();
         }
     }
     private void StartAttack()
@@ -244,6 +246,7 @@ public class PlayerController : MonoBehaviour
         rb.velocity = Vector2.zero;
 
         animator.SetTrigger("Die");
+        AudioManager.Instance.PlayPlayerDeath();
     }
     public void ChangeColliders()
     {

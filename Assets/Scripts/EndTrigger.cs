@@ -7,6 +7,7 @@ public class EndTrigger : MonoBehaviour
         if (!collision.CompareTag("Player"))
             return;
 
+        AudioManager.Instance.PlayEndGame();
         GameManager.Instance.TriggerEndGame();
     }
 }

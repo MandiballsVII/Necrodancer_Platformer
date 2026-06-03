@@ -22,6 +22,26 @@ public class GameManager : MonoBehaviour
         }
 
         Instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.buildIndex == 0)
+        {
+            AudioManager.Instance.PlayMenuMusic();
+        }
+        else
+        {
+            AudioManager.Instance.PlayLevelMusic();
+        }
     }
 
     public int GetCoins() => coins;

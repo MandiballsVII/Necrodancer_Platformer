@@ -57,6 +57,7 @@ public class SkeletonEnemy : MonoBehaviour
     {
         ChangeState(SkeletonState.Spawning);
         UpdateDirection();
+        AudioManager.Instance.PlayEnemyRiseFall();
     }
 
     private void Update()
@@ -238,6 +239,7 @@ public class SkeletonEnemy : MonoBehaviour
         if (currentState == SkeletonState.Dying || currentState == SkeletonState.Spawning)
             return;
 
+        AudioManager.Instance.PlayHit();
         killedByPlayer = true;
 
         Die();

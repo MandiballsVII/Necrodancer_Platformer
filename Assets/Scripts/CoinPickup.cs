@@ -33,7 +33,7 @@ public class CoinPickup : MonoBehaviour
         if (!other.CompareTag("Player"))
             return;
         GameManager.Instance.AddCoin();
-
+        AudioManager.Instance.PlayCoin();
         Destroy(gameObject);
     }
 }
